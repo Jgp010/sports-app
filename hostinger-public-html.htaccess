@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 禁止外部直接瀏覽 backend 原始碼路徑；內部 Rewrite 不受影響。
+    RewriteCond %{THE_REQUEST} "\s/+backend(?:/|\s)" [NC]
+    RewriteRule ^backend(?:/.*)?$ - [F,L]
+
+    # 已經進入 Laravel public 目錄時停止外層重寫，交給 public/.htaccess 處理。
+    RewriteRule ^backend/public/ - [L]
+
+    # 網站首頁交給 Laravel front controller。
+    RewriteRule ^$ backend/public/index.php [L,QSA]
+
+    # 保留 public_html 中實際存在的檔案與目錄，例如 backend/test.php。
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.+)$ backend/public/$1 [L,QSA]
+</IfModule>

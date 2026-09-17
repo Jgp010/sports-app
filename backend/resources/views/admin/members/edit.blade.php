@@ -1,0 +1,11 @@
+@extends('admin.layout')
+@section('title', '編輯會員｜管理後台')
+@section('content')
+<div class="page-heading"><div><p class="eyebrow">MEMBER PROFILE</p><h1>{{ $member->name }}</h1></div><a class="button" href="{{ route('admin.members.index') }}">返回列表</a></div>
+<div class="editor-grid"><form method="post" action="{{ route('admin.members.update',$member) }}" class="panel stack">@csrf @method('PUT')
+<div class="form-grid"><label>姓名<input name="name" value="{{ old('name',$member->name) }}" required></label><label>Email<input type="email" name="email" value="{{ old('email',$member->email) }}" required></label></div><div class="form-grid"><label>電話<input name="phone" value="{{ old('phone',$member->phone) }}"></label><label>生日<input type="date" name="birth_date" value="{{ old('birth_date',$member->birth_date?->format('Y-m-d')) }}"></label></div>
+<div class="form-grid"><label>性別<select name="gender"><option value="">未填寫</option>@foreach(['male'=>'男性','female'=>'女性','other'=>'其他','undisclosed'=>'不透露'] as $key=>$label)<option value="{{ $key }}" @selected(old('gender',$member->gender)===$key)>{{ $label }}</option>@endforeach</select></label><label>會員類型<input value="一般會員" disabled></label></div>
+<label>地址<input name="address" value="{{ old('address',$member->address) }}"></label><label class="check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active',$member->is_active))>帳號啟用</label><div class="form-grid"><label>SSO Provider<input name="sso_provider" value="{{ old('sso_provider',$member->sso_provider) }}"></label><label>SSO Subject<input name="sso_subject" value="{{ old('sso_subject',$member->sso_subject) }}"></label></div>
+<label>更新 SSO 憑證（留空不變；資料庫加密保存）<textarea name="sso_credential" rows="3"></textarea></label><label>重設密碼（留空不變）<input type="password" name="password"></label><button class="button primary">儲存會員資料</button></form>
+<aside class="panel"><h2>報名紀錄</h2>@forelse($member->eventRegistrations as $item)<p><a href="{{ route('admin.registrations.edit',$item) }}">{{ $item->event->title }}</a><small>{{ $item->registration_no }}｜{{ ['registered'=>'已報名','cancelled'=>'已取消','attended'=>'已出席'][$item->status] ?? $item->status }}｜{{ $item->registered_at->format('Y-m-d H:i') }}</small></p>@empty<p class="muted">尚無報名紀錄。</p>@endforelse</aside></div>
+@endsection

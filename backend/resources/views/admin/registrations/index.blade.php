@@ -1,0 +1,9 @@
+@extends('admin.layout')
+@section('title', '報名管理｜管理後台')
+@section('content')
+<div class="page-heading"><div><p class="eyebrow">REGISTRATIONS</p><h1>報名管理</h1></div></div>
+<section class="panel"><form class="filters" method="get"><label class="filter-field wide">關鍵字<input name="q" value="{{ request('q') }}" placeholder="編號、姓名或 Email"></label><label class="filter-field">賽事<select name="event_id"><option value="">全部賽事</option>@foreach($events as $event)<option value="{{ $event->id }}" @selected((string)request('event_id')===(string)$event->id)>{{ $event->title }}</option>@endforeach</select></label><label class="filter-field">狀態<select name="status"><option value="">全部狀態</option>@foreach(['registered'=>'已報名','cancelled'=>'已取消','attended'=>'已出席'] as $key=>$label)<option value="{{ $key }}" @selected(request('status')===$key)>{{ $label }}</option>@endforeach</select></label><button class="button">搜尋</button></form>
+<table><thead><tr><th>報名編號</th><th>賽事／項目</th><th>會員／單位</th><th>聯絡電話</th><th>金額</th><th>狀態</th><th>報名時間</th><th>操作</th></tr></thead><tbody>
+@forelse($registrations as $item)<tr><td>{{ $item->registration_no }}</td><td>{{ $item->event->title }}<small>{{ $item->items->pluck('name')->join('、') ?: '—' }}</small></td><td>{{ $item->user->name }}<small>{{ $item->organization ?: '—' }}｜{{ $item->user->email }}</small></td><td>{{ $item->contact_phone }}</td><td>NT$ {{ number_format((float)$item->total_amount) }}</td><td><span class="badge {{ $item->status }}">{{ ['registered'=>'已報名','cancelled'=>'已取消','attended'=>'已出席'][$item->status] ?? $item->status }}</span></td><td>{{ $item->registered_at->format('Y-m-d H:i') }}</td><td><a href="{{ route('admin.registrations.edit',$item) }}">查閱／編輯</a></td></tr>@empty<tr><td colspan="8" class="empty">尚無報名資料。</td></tr>@endforelse
+</tbody></table></section>
+@endsection

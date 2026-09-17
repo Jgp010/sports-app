@@ -1,0 +1,48 @@
+/.composer-cache/
+/.composer-home/
+/.vscode/
+/.nested-git-backups/
+Thumbs.db
+/android-app/keystore.properties
+/android-app/*.jks
+/android-app/*.keystore
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.mobileprovision
+
+# Laravel
+/backend/vendor/
+/backend/node_modules/
+/backend/public/build/
+/backend/storage/logs/*.log
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
+/backend/storage/framework/PsySH/
+!/backend/storage/framework/cache/data/.gitignore
+!/backend/storage/framework/sessions/.gitignore
+!/backend/storage/framework/views/.gitignore
+
+# Android / Gradle
+/.gradle/
+/android-app/.gradle/
+/android-app/build/
+/android-app/app/build/
+/android-app/local.properties
+*.apk
+*.aab
+
+# Xcode / Swift
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Generated deliverables
+/artifacts/

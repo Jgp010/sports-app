@@ -1,0 +1,61 @@
+workflows:
+  ios-simulator-smoke:
+    name: iOS Simulator 自動測試
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: latest
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: "*"
+          include: true
+          source: true
+    scripts:
+      - name: 顯示建置環境
+        script: |
+          xcodebuild -version
+          xcrun simctl list devices available
+      - name: 編譯並執行 iPhone Simulator UI 測試
+        script: |
+          set -o pipefail
+          mkdir -p "$CM_BUILD_DIR/build"
+          xcodebuild test \
+            -project "$CM_BUILD_DIR/ios-app/SportsApp.xcodeproj" \
+            -scheme SportsApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -resultBundlePath "$CM_BUILD_DIR/build/SportsAppTests.xcresult" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - build/SportsAppTests.xcresult
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Logs/CoreSimulator/**/*.log
+
+  ios-simulator-build:
+    name: iOS Simulator 編譯檢查
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      xcode: latest
+    scripts:
+      - name: 建立未簽章 Simulator App
+        script: |
+          xcodebuild build \
+            -project "$CM_BUILD_DIR/ios-app/SportsApp.xcodeproj" \
+            -scheme SportsApp \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - /tmp/xcodebuild_logs/*.log

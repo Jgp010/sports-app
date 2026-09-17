@@ -1,0 +1,166 @@
+openapi: 3.1.0
+info:
+  title: Sports Events API
+  version: 2.0.0
+  description: Android 與未來 iOS 共用的消息、會員、賽事及報名 API。日期時間皆為 Asia/Taipei ISO 8601。
+servers:
+  - url: https://purple-oyster-440244.hostingersite.com/api/v1
+    description: Hostinger production
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local development
+paths:
+  /news:
+    get:
+      summary: 取得已發布消息
+      responses: {'200': {description: 消息列表}}
+  /news/{slug}:
+    get:
+      summary: 取得消息詳情
+      parameters: [{$ref: '#/components/parameters/Slug'}]
+      responses: {'200': {description: 消息詳情}, '404': {description: 不存在}}
+  /sports:
+    get:
+      summary: 取得運動類別
+      responses: {'200': {description: 類別列表}}
+  /events:
+    get:
+      summary: 取得已發布賽事
+      responses:
+        '200':
+          description: 賽事列表
+          content: {application/json: {schema: {$ref: '#/components/schemas/EventListResponse'}}}
+  /events/{slug}:
+    get:
+      summary: 取得賽事詳情與目前報名狀態
+      parameters: [{$ref: '#/components/parameters/Slug'}]
+      responses: {'200': {description: 賽事詳情}, '404': {description: 不存在}}
+  /auth/register:
+    post:
+      summary: 註冊會員並取得 Token
+      requestBody: {$ref: '#/components/requestBodies/Register'}
+      responses: {'201': {description: 註冊成功}, '422': {description: 驗證失敗}}
+  /auth/login:
+    post:
+      summary: 會員登入
+      requestBody: {$ref: '#/components/requestBodies/Login'}
+      responses: {'200': {description: 登入成功}, '422': {description: 帳密錯誤}}
+  /auth/logout:
+    post:
+      summary: 登出並撤銷目前 Token
+      security: [{bearerAuth: []}]
+      responses: {'200': {description: 登出成功}, '401': {description: 未登入}}
+  /me:
+    get:
+      summary: 取得會員基本資料
+      security: [{bearerAuth: []}]
+      responses: {'200': {description: 會員資料}, '401': {description: 未登入}}
+    put:
+      summary: 修改會員基本資料
+      security: [{bearerAuth: []}]
+      responses: {'200': {description: 更新成功}, '422': {description: 驗證失敗}}
+  /events/{slug}/registrations:
+    post:
+      summary: 報名賽事
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/Slug'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contact_phone, organization, emergency_contact_name, emergency_contact_phone, item_ids]
+              properties:
+                contact_phone: {type: string}
+                organization: {type: string}
+                emergency_contact_name: {type: string}
+                emergency_contact_phone: {type: string}
+                item_ids: {type: array, minItems: 1, items: {type: integer}}
+                notes: {type: [string, 'null']}
+      responses: {'201': {description: 報名成功}, '401': {description: 未登入}, '409': {description: 已報名}, '422': {description: 非報名期間或額滿}}
+  /me/registrations:
+    get:
+      summary: 取得自己的報名紀錄
+      security: [{bearerAuth: []}]
+      responses: {'200': {description: 報名紀錄}, '401': {description: 未登入}}
+  /registrations/{id}:
+    delete:
+      summary: 取消自己的報名
+      security: [{bearerAuth: []}]
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      responses: {'200': {description: 取消成功}, '401': {description: 未登入}, '404': {description: 非本人報名}}
+  /app-config:
+    get:
+      summary: 取得 App 設定
+      responses: {'200': {description: App 設定}}
+  /health:
+    get:
+      summary: 健康檢查
+      responses: {'200': {description: 服務正常}}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer}
+  parameters:
+    Slug: {name: slug, in: path, required: true, schema: {type: string}}
+  requestBodies:
+    Register:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, email, password]
+            properties: {name: {type: string}, email: {type: string, format: email}, password: {type: string, minLength: 8}, phone: {type: string}}
+    Login:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password]
+            properties: {email: {type: string, format: email}, password: {type: string}}
+  schemas:
+    Sport:
+      type: object
+      required: [id, name, slug]
+      properties: {id: {type: integer}, name: {type: string}, slug: {type: string}}
+    Event:
+      type: object
+      required: [id, slug, title, description, venue, sport, event_start_at, registration_open_at, registration_close_at, registered_count, registration_open, items]
+      properties:
+        id: {type: integer}
+        slug: {type: string}
+        title: {type: string}
+        description: {type: string}
+        venue: {type: string}
+        sport: {$ref: '#/components/schemas/Sport'}
+        event_start_at: {type: string, format: date-time}
+        event_end_at: {type: [string, 'null'], format: date-time}
+        registration_open_at: {type: string, format: date-time}
+        registration_close_at: {type: string, format: date-time}
+        capacity: {type: [integer, 'null']}
+        registered_count: {type: integer}
+        registration_open: {type: boolean}
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/EventItem'}
+    EventItem:
+      type: object
+      required: [id, name, registration_fee, current_fee, early_bird_active]
+      properties:
+        id: {type: integer}
+        name: {type: string}
+        description: {type: [string, 'null']}
+        registration_fee: {type: integer, minimum: 0}
+        early_bird_fee: {type: [integer, 'null'], minimum: 0}
+        early_bird_ends_at: {type: [string, 'null'], format: date-time}
+        current_fee: {type: integer, minimum: 0}
+        early_bird_active: {type: boolean}
+    EventListResponse:
+      type: object
+      properties:
+        success: {type: boolean}
+        data: {type: array, items: {$ref: '#/components/schemas/Event'}}
+        meta: {type: object}
+        error: {type: ['object', 'null']}

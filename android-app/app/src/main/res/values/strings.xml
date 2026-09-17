@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">體育賽事消息</string>
+    <string name="latest_news">最新消息</string>
+    <string name="refresh">重新整理</string>
+    <string name="empty_news">目前沒有已發布的賽事消息。</string>
+    <string name="detail_error">無法開啟消息\n%1$s</string>
+    <string name="list_error">無法取得消息\n%1$s</string>
+    <string name="network_retry">請檢查網路後重試</string>
+    <string name="event_time_venue">%1$s｜%2$s</string>
+    <string name="event_detail_meta">賽事：%1$s（台灣時間）\n地點：%2$s\n報名：%3$s 至 %4$s\n名額：%5$d/%6$s</string>
+    <string name="registration_summary">編號：%1$s｜狀態：%2$s</string>
+    <string name="event_time">賽事：%1$s</string>
+    <string name="registration_time">報名：%1$s（台灣時間）</string>
+</resources>

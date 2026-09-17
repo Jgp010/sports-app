@@ -22,12 +22,18 @@ workflows:
         script: |
           set -o pipefail
           mkdir -p "$CM_BUILD_DIR/build"
+          SIMULATOR_ID="$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/ { print $2; exit }')"
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "找不到可用的 iPhone Simulator"
+            exit 1
+          fi
+          echo "使用 iPhone Simulator：$SIMULATOR_ID"
           xcodebuild test \
             -project "$CM_BUILD_DIR/ios-app/SportsApp.xcodeproj" \
             -scheme SportsApp \
             -configuration Debug \
             -sdk iphonesimulator \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
             -resultBundlePath "$CM_BUILD_DIR/build/SportsAppTests.xcresult" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
